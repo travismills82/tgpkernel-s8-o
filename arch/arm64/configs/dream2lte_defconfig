@@ -1,0 +1,7 @@
+#
+# Modifications for Samsung Galaxy S8+ (dream2lte)
+#
+CONFIG_MODEL_DREAM2LTE=y
+CONFIG_CAMERA_DREAM2=y
+CONFIG_POC_DREAM2=y
+CONFIG_SENSORS_HRM_ADPD143=y
