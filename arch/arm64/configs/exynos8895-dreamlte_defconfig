@@ -526,6 +526,7 @@ CONFIG_ARM64_UAO=y
 CONFIG_CMDLINE=""
 # CONFIG_EFI is not set
 # CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE is not set
+CONFIG_LOD_SEC=y
 
 #
 # Userspace binary formats
