@@ -40,6 +40,7 @@ if egrep -q "install=1" "/tmp/aroma/check_n8.prop"; then
 	ui_print "- Patching for Note 8 Port ROMs"
 	sed -i -- 's/dream2lte/greatlte/g' $ramdisk/sbin/kernelinit.sh
 	sed -i -- 's/G955FXXU2CRF7/N950FXXU3CRC1/g' $ramdisk/sbin/kernelinit.sh
+	echo "2018-10" >> $split_img/boot.img-oslevel
 	cp -rf $patch/ramdisk-n8/* $ramdisk
 	chmod 644 $ramdisk/audit_filter_table
 	chmod 644 $ramdisk/default.prop
@@ -59,6 +60,7 @@ if egrep -q "install=1" "/tmp/aroma/check_s9.prop"; then
 		sed -i -- 's/star2lte/starlte/g' $patch/ramdisk-s8/default.prop
 		sed -i -- 's/star2lte/starlte/g' $ramdisk/sbin/kernelinit.sh
 	fi
+	echo "2018-10" >> $split_img/boot.img-oslevel
 	cp -rf $patch/ramdisk-s9/* $ramdisk
 	chmod 644 $ramdisk/audit_filter_table
 	chmod 644 $ramdisk/default.prop
