@@ -1,12 +1,11 @@
 #!/sbin/sh
 # ------------------------------
-# TGPKERNEL INSTALLER 5.5.3
+# TGPKERNEL INSTALLER 5.5.4
 # Created by @djb77
 #
 # Credit also goes to @Tkkg1994,
-# @lyapota, @Morogoku, 
-# @dwander, and @Chainfire
-# for bits of code and/or ideas.
+# @lyapota, @Morogoku and 
+# @dwander for bits of code
 # ------------------------------
 
 # Read option number from updater-script
@@ -142,7 +141,7 @@ if [ $OPTION == "config_restore" ]; then
 	exit 10
 fi
 
-if [ $OPTION == "wipe_magisk_su" ]; then
+if [ $OPTION == "wipe_magisk" ]; then
 	## Wipe old Magisk / SuperSU Installs (@mwilky)
 	mount /cache
 	rm -rf /cache/magisk.log /cache/last_magisk.log /cache/magiskhide.log \
@@ -230,80 +229,6 @@ if [ $OPTION == "splash_flash" ]; then
 	exit 10
 fi
 
-if [ $OPTION == "supersu" ]; then
-	## SuperSU Script (@Chainfire)
-	rm -f /data/.supersu
-	rm -f /cache/.supersu
-	if [ -f "$AROMA/install.prop" ]; then
-		INSTALL=`cat $AROMA/install.prop | grep "selected.0" | cut -f 2 -d '='`
-		if [ "$INSTALL" = "2" ]; then
-			# System
-			echo "SYSTEMLESS=false">>/data/.supersu
-		elif [ "$INSTALL" = "3" ]; then
-			# Systemless Image
-			echo "SYSTEMLESS=true">>/data/.supersu
-			echo "BINDSBIN=false">>/data/.supersu
-		elif [ "$INSTALL" = "4" ]; then
-			# Systemless SBIN
-			echo "SYSTEMLESS=true">>/data/.supersu
-			echo "BINDSBIN=true">>/data/.supersu
-		fi
-	fi
-	if [ -f "$AROMA/encrypt.prop" ]; then
-		KEEPVERITY=`cat $AROMA/encrypt.prop | grep "selected.1" | cut -f 2 -d '='`
-		if [ "$KEEPVERITY" = "2" ]; then
-			# Remove
-			echo "KEEPVERITY=false">>/data/.supersu
-		elif [ "$KEEPVERITY" = "3" ]; then
-			# Keep
-			echo "KEEPVERITY=true">>/data/.supersu
-		fi
-		KEEPFORCEENCRYPT=`cat $AROMA/encrypt.prop | grep "selected.2" | cut -f 2 -d '='`
-		if [ "$KEEPFORCEENCRYPT" = "2" ]; then
-			# Remove
-			echo "KEEPFORCEENCRYPT=false">>/data/.supersu
-		elif [ "$KEEPFORCEENCRYPT" = "3" ]; then
-			# Keep
-			echo "KEEPFORCEENCRYPT=true">>/data/.supersu
-		fi
-		REMOVEENCRYPTABLE=`cat $AROMA/encrypt.prop | grep "selected.3" | cut -f 2 -d '='`
-		if [ "$REMOVEENCRYPTABLE" = "2" ]; then
-			# Remove
-			echo "REMOVEENCRYPTABLE=true">>/data/.supersu
-		elif [ "$REMOVEENCRYPTABLE" = "3" ]; then
-			# Keep
-			echo "REMOVEENCRYPTABLE=false">>/data/.supersu
-		fi
-	fi
-	if [ -f "$AROMA/misc.prop" ]; then
-		FRP=`cat $AROMA/misc.prop | grep "selected.1" | cut -f 2 -d '='`
-		if [ "$FRP" = "2" ]; then
-			# Enable
-			echo "FRP=true">>/data/.supersu
-		elif [ "$FRP" = "3" ]; then
-			# Disable
-			echo "FRP=false">>/data/.supersu
-		fi
-		BINDSYSTEMXBIN=`cat $AROMA/misc.prop | grep "selected.2" | cut -f 2 -d '='`
-		if [ "$BINDSYSTEMXBIN" = "2" ]; then
-			# Enable
-			echo "BINDSYSTEMXBIN=true">>/data/.supersu
-		elif [ "$BINDSYSTEMXBIN" = "3" ]; then
-			# Disable
-			echo "BINDSYSTEMXBIN=false">>/data/.supersu
-		fi
-		PERMISSIVE=`cat $AROMA/misc.prop | grep "selected.3" | cut -f 2 -d '='`
-		if [ "$PERMISSIVE" = "2" ]; then
-			# Enforcing
-			echo "PERMISSIVE=false">>/data/.supersu
-		elif [ "$PERMISSIVE" = "3" ]; then
-			# Permissive
-			echo "PERMISSIVE=true">>/data/.supersu
-		fi
-	fi
-	exit 10
-fi
-
 if [ $OPTION == "adb" ]; then
 	## Install ADB
 	rm -f /system/xbin/adb /system/xbin/adb.bin /system/xbin/fastboot
@@ -319,7 +244,7 @@ if [ $OPTION == "busybox" ]; then
 	## Install Busybox
 	rm -f /system/bin/busybox /system/xbin/busybox
 	cp -f $AROMA/busybox /system/xbin/busybox
-	chmod 0755 /system/xbin/busybox
+	chmod 755 /system/xbin/busybox
 	ln -s /system/xbin/busybox /system/bin/busybox
 	/system/xbin/busybox --install -s /system/xbin
 	exit 10

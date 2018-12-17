@@ -1,5 +1,5 @@
 # -------------------------
-# TGPKERNEL INSTALLER 5.5.3
+# TGPKERNEL INSTALLER 5.5.4
 # Created by @djb77
 # -------------------------
 
@@ -23,26 +23,14 @@ endif;
 
 set_progress(0.10);
 
-# WIPE MAGISK / SUPERSU
-# ---------------------
+# WIPE MAGISK
+# -----------
 if file_getprop("/tmp/aroma/wipe.prop","install") == "1" then
-	ui_print("<#ffffcc>Clearing old Magisk / SuperSU Installs</#>");
-	ui_print("- Wiping Magisk");
+	ui_print("<#ffffcc>Clearing old Magisk Installs</#>");
 	package_extract_dir("tgpkernel/magisk-uninstaller", "/tmp/magisk-uninstaller");
 	run_program("/sbin/busybox", "unzip", "/tmp/magisk-uninstaller/magisk-uninstaller.zip", "META-INF/com/google/android/*", "-d", "/tmp/magisk-uninstaller");
 	run_program("/sbin/sh", "/tmp/magisk-uninstaller/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/magisk-uninstaller/magisk-uninstaller.zip");
 	delete_recursive("/tmp/magisk-uninstaller");
-	ui_print("- Wiping SuperSU");
-	if is_mounted("/data") == "/data" then
-		assert(run_program("/sbin/busybox", "umount", "/data"));
-	endif;
-	if is_mounted("/cache") == "/cache" then
-		assert(run_program("/sbin/busybox", "umount", "/cache"));
-	endif;
-	package_extract_dir("tgpkernel/unsu", "/tmp/unsu");
-	run_program("/sbin/busybox", "unzip", "/tmp/unsu/unsu.zip", "META-INF/com/google/android/*", "-d", "/tmp/unsu");
-	run_program("/sbin/sh", "/tmp/unsu/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/unsu/unsu.zip");
-	delete_recursive("/tmp/unsu");
 	ui_print(" ");
 endif;
 
@@ -68,7 +56,7 @@ ifelse(is_mounted("/data"), unmount("/data"));
 run_program("/sbin/mount", "/system");
 run_program("/sbin/mount", "/data");
 if file_getprop("/tmp/aroma/wipe.prop","install") == "1" then
-run_program("/tmp/aroma/tgpkernel.sh", "wipe_magisk_su");
+	run_program("/tmp/aroma/tgpkernel.sh", "wipe_magisk");
 endif;
 
 set_progress(0.35);
@@ -264,19 +252,6 @@ if file_getprop("/tmp/aroma/anykernel.prop","install") == "1" then
 endif;
 
 set_progress(0.75);
-
-# INSTALL SUPERSU
-# ---------------
-if file_getprop("/tmp/aroma/supersu.prop","install") == "1" then
-	ui_print(" ");
-	ui_print("<#ffffcc>Installing SuperSU</#>");
-	package_extract_dir("tgpkernel/supersu", "/tmp/supersu");
-	package_extract_dir("tgpkernel/suhide", "/data/media/0");
-	run_program("/tmp/aroma/tgpkernel.sh", "supersu");
-	run_program("/sbin/busybox", "unzip", "/tmp/supersu/supersu.zip", "META-INF/com/google/android/*", "-d", "/tmp/supersu");
-	run_program("/sbin/sh", "/tmp/supersu/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/supersu/supersu.zip");
-	delete_recursive("/tmp/supersu");
-endif;
 
 set_progress(0.85);
 
