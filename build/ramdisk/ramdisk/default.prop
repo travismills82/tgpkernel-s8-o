@@ -39,7 +39,13 @@ ro.security.vaultkeeper.feature=0
 ro.sec.fle.encryption=false
 ro.config.knox=v30
 wlan.wfd.hdcp=disable
-
+boot.fps=30
+shutdown.fps=30
+ro.opa.eligible_device=true
+ro.config.hw_quickpoweron=true
+ro.config.hw_power_saving=true
+ro.config.hw_fast_dormancy=1
+persist.sys.shutdown.mode=hibernate
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
