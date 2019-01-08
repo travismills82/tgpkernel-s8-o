@@ -114,6 +114,7 @@ on post-fs-data
 on boot
 # SSWAP
     write /proc/sys/vm/swappiness 160
+    echo lz4 > /sys/module/zswap/parameters/compressor
 
     # Allow to access debugfs for system:system
     chmod 0755 /sys/kernel/debug
@@ -960,7 +961,7 @@ on property:security.semdaemonfinish=1
     stop sem_daemon
 
 # SSWAP
-service swapon /sbin/sswap -s -f 2048
+service swapon /sbin/sswap -s -f 1024
     class core
     user root
     group root
