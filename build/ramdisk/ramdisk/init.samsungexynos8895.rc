@@ -961,7 +961,7 @@ on property:security.semdaemonfinish=1
     stop sem_daemon
 
 # SSWAP
-service swapon /sbin/sswap -s -f 1536
+service swapon /sbin/sswap -s -f 2048
     class core
     user root
     group root
