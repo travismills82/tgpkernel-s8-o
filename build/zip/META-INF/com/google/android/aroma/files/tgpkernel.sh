@@ -1,6 +1,6 @@
 #!/sbin/sh
 # ------------------------------
-# TGPKERNEL INSTALLER 5.5.4
+# TGPKERNEL INSTALLER 5.5.6
 # Created by @djb77
 #
 # Credit also goes to @Tkkg1994,
@@ -25,10 +25,6 @@ KERNEL_REMOVE="init.services.rc init.PRIME-Kernel.rc init.spectrum.sh init.spect
 
 if [ $OPTION == "setup" ]; then
 	## Set Permissions
-	chmod 755 $AROMA/adb
-	chmod 755 $AROMA/adb.bin
-	chmod 755 $AROMA/fastboot
-	chmod 755 $AROMA/busybox
 	chmod 755 $AROMA/tar
 	chmod 755 $AROMA/tgpkernel.sh
 	exit 10
@@ -142,16 +138,18 @@ if [ $OPTION == "config_restore" ]; then
 fi
 
 if [ $OPTION == "wipe_magisk" ]; then
-	## Wipe old Magisk / SuperSU Installs (@mwilky)
+	## Wipe old Magisk / SuperSU Installs
 	mount /cache
-	rm -rf /cache/magisk.log /cache/last_magisk.log /cache/magiskhide.log \
-		 /cache/.disable_magisk /cache/magisk /cache/magisk_merge /cache/magisk_mount \
-		 /cache/unblock /cache/magisk_uninstaller.sh /data/Magisk.apk /data/magisk.apk \
-		 /data/magisk.img /data/magisk_merge.img /data/busybox /data/magisk /data/custom_ramdisk_patch.sh 2>/dev/null
-	rm -rf /cache/.supersu /cache/su.img /cache/SuperSU.apk \
-	     /data/.supersu /data/stock_boot_*.img.gz /data/su.img \
-	     /data/SuperSU.apk /data/app/eu.chainfire.supersu* \
-	     /data/data/eu.chainfire.supersu /data/supersu /supersu
+	rm -rf /system/.pin /system/bin/.ext /system/etc/.installed_su_daemon /system/etc/.has_su_daemon \
+	/system/xbin/daemonsu /system/xbin/su /system/xbin/sugote /system/xbin/sugote-mksh /system/xbin/supolicy \
+	/system/bin/app_process_init /system/bin/su /cache/su /system/lib/libsupol.so /system/lib64/libsupol.so \
+	/system/su.d /system/etc/install-recovery.sh /system/etc/init.d/99SuperSUDaemon /cache/install-recovery.sh \
+	/system/.supersu /cache/.supersu /data/.supersu \
+	/system/app/Superuser.apk /system/app/SuperSU /cache/Superuser.apk \
+	/cache/.supersu /cache/su.img /cache/SuperSU.apk \
+	/data/.supersu /data/stock_boot_*.img.gz /data/su.img \
+	/data/SuperSU.apk /data/app/eu.chainfire.supersu* \
+	/data/data/eu.chainfire.supersu /data/supersu /supersu  2>/dev/null
 	exit 10
 fi
 
@@ -196,6 +194,7 @@ if [ $OPTION == "kernel_flash" ]; then
 	for i in $(ls ./res); do
 		test $i != "images" && rm -R ./res/$i
 	done
+	[ -d /sbin/.backup ] && rm -rf /sbin/.backup
 	[ -f /system/bin/uci ] && rm -f /system/bin/uci
 	[ -f /system/xbin/uci ] && rm -f /system/xbin/uci
 	# Flash new Image
@@ -226,27 +225,6 @@ if [ $OPTION == "splash_flash" ]; then
 	rm -rf /tmp/splashtmp
 	rm -f /tmp/new.tar
 	sync
-	exit 10
-fi
-
-if [ $OPTION == "adb" ]; then
-	## Install ADB
-	rm -f /system/xbin/adb /system/xbin/adb.bin /system/xbin/fastboot
-	cp -f $AROMA/adb /system/xbin/adb
-	cp -f $AROMA/adb.bin /system/xbin/adb.bin
-	cp -f $AROMA/fastboot /system/xbin/fastboot
-	chown 0:0 "/system/xbin/adb" "/system/xbin/adb.bin" "/system/xbin/fastboot"
-	chmod 755 "/system/xbin/adb" "/system/xbin/adb.bin" "/system/xbin/fastboot"
-	exit 10
-fi
-
-if [ $OPTION == "busybox" ]; then
-	## Install Busybox
-	rm -f /system/bin/busybox /system/xbin/busybox
-	cp -f $AROMA/busybox /system/xbin/busybox
-	chmod 755 /system/xbin/busybox
-	ln -s /system/xbin/busybox /system/bin/busybox
-	/system/xbin/busybox --install -s /system/xbin
 	exit 10
 fi
 

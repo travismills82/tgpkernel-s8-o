@@ -1,5 +1,5 @@
 # -------------------------
-# TGPKERNEL INSTALLER 5.5.4
+# TGPKERNEL INSTALLER 5.5.6
 # Created by @djb77
 # -------------------------
 
@@ -209,24 +209,6 @@ endif;
 
 set_progress(0.60);
 
-# INSTALL BUSYBOX
-# ---------------
-if file_getprop("/tmp/aroma/busybox.prop","install") == "1" then
-	ui_print("<#ffffcc>Installing Busybox</#>");
-	run_program("/tmp/aroma/tgpkernel.sh", "busybox");
-endif;
-
-set_progress(0.62);
-
-# INSTALL ADB
-# -----------
-if file_getprop("/tmp/aroma/adb.prop","install") == "1" then
-	ui_print("<#ffffcc>Installing ADB</#>");
-	run_program("/tmp/aroma/tgpkernel.sh", "adb");
-endif;
-
-set_progress(0.65);
-
 # PERMISSIONS
 # -----------
 ui_print(" ");
@@ -237,7 +219,20 @@ set_metadata("/system/vendor/lib/libsecure_storage.so", "uid", 0, "gid", 0, "mod
 set_metadata("/system/vendor/lib64/libsecure_storage.so", "uid", 0, "gid", 0, "mode", 0644, "capabilities", 0x0, "selabel", "u:object_r:system_file:s0");
 set_metadata_recursive("/system/xbin", "uid", 0, "gid", 2000, "dmode", 0755, "fmode", 0755, "capabilities", 0x0, "selabel", "u:object_r:system_file:s0");
 
-set_progress(0.70);
+set_progress(0.65);
+
+# INSTALL MAGISK
+# --------------
+if file_getprop("/tmp/aroma/magisk.prop","install") == "1" then
+	ui_print(" ");
+	ui_print("<#ffffcc>Installing Magisk</#>");
+	package_extract_dir("tgpkernel/magisk", "/tmp/magisk");
+	run_program("/sbin/busybox", "unzip", "/tmp/magisk/magisk.zip", "META-INF/com/google/android/*", "-d", "/tmp/magisk");
+	run_program("/sbin/sh", "/tmp/magisk/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/magisk/magisk.zip");
+	delete_recursive("/tmp/magisk");
+endif;
+
+set_progress(0.75);
 
 # RAMDISK PATCHES
 # ---------------
@@ -251,19 +246,30 @@ if file_getprop("/tmp/aroma/anykernel.prop","install") == "1" then
 	delete_recursive("/tmp/anykernel*");
 endif;
 
-set_progress(0.75);
+set_progress(0.86);
 
-set_progress(0.85);
-
-# INSTALL MAGISK
-# --------------
-if file_getprop("/tmp/aroma/magisk.prop","install") == "1" then
+# INSTALL ADB
+# -----------
+if file_getprop("/tmp/aroma/adb.prop","install") == "1" then
 	ui_print(" ");
-	ui_print("<#ffffcc>Installing Magisk</#>");
-	package_extract_dir("tgpkernel/magisk", "/tmp/magisk");
-	run_program("/sbin/busybox", "unzip", "/tmp/magisk/magisk.zip", "META-INF/com/google/android/*", "-d", "/tmp/magisk");
-	run_program("/sbin/sh", "/tmp/magisk/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/magisk/magisk.zip");
-	delete_recursive("/tmp/magisk");
+	ui_print("<#ffffcc>Installing ADB</#>");
+	package_extract_dir("tgpkernel/adb", "/tmp/adb");
+	run_program("/sbin/busybox", "unzip", "/tmp/adb/adb.zip", "META-INF/com/google/android/*", "-d", "/tmp/adb");
+	run_program("/sbin/sh", "/tmp/adb/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/adb/adb.zip");
+	delete_recursive("/tmp/adb");
+endif;
+
+set_progress(0.89);
+
+# INSTALL BUSYBOX
+# ---------------
+if file_getprop("/tmp/aroma/busybox.prop","install") == "1" then
+	ui_print(" ");
+	ui_print("<#ffffcc>Installing BusyBox</#>");
+	package_extract_dir("tgpkernel/busybox", "/tmp/busybox");
+	run_program("/sbin/busybox", "unzip", "/tmp/busybox/busybox.zip", "META-INF/com/google/android/*", "-d", "/tmp/busybox");
+	run_program("/sbin/sh", "/tmp/busybox/META-INF/com/google/android/update-binary", "dummy", "1", "/tmp/busybox/busybox.zip");
+	delete_recursive("/tmp/busybox");
 endif;
 
 set_progress(0.95);

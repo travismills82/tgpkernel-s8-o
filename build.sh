@@ -1,6 +1,6 @@
 #!/bin/bash
 # ----------------------------
-# TGPKERNEL BUILD SCRIPT 5.5.4
+# TGPKERNEL BUILD SCRIPT 5.5.6
 # Created by @djb77
 # ----------------------------
 
@@ -11,13 +11,16 @@ export VERSION_NUMBER=$(<build/version)
 export ARCH=arm64
 export BUILD_CROSS_COMPILE=~/android/toolchains/aarch64-linux-android-4.9/bin/aarch64-linux-android-
 BUILD_JOB_NUMBER=`grep processor /proc/cpuinfo|wc -l`
-WORKDIR=$RDIR/.work
+WORK=.work
+WORKDIR=$RDIR/$WORK
 ZIPDIR=$RDIR/.work_zip
 OUTPUT=$RDIR/.output
 OUTDIR=$WORKDIR/arch/$ARCH/boot
-KERNELCONFIG=.work/arch/arm64/configs/build_defconfig
+KERNELCONFIG=$WORK/arch/arm64/configs/build_defconfig
 KEEP=no
 SILENT=no
+BUILD950=yes
+BUILD955=yes
 
 ########################################################################################################################################################
 # Functions
@@ -32,6 +35,8 @@ if [ -d $WORKDIR ]; then
 sudo chown 0:0 $WORKDIR 2>/dev/null
 sudo chmod -R 777 $WORKDIR
 sudo rm -rf $WORKDIR
+[ -d "$RDIR/net/wireguard" ] && rm -rf $RDIR/net/wireguard
+[ -e "$RDIR/.wireguard-fetch-lock" ] && rm -f $RDIR/.wireguard-fetch-lock
 fi
 }
 
@@ -41,7 +46,6 @@ FUNC_CLEAN_ALL()
 FUNC_CLEAN
 [ -d $ZIPDIR ] && rm -rf $ZIPDIR
 [ -d $OUTPUT ] && rm -rf $OUTPUT
-[ -d "$RDIR/net/wireguard" ] && rm -rf $RDIR/net/wireguard
 exit
 }
 
@@ -58,7 +62,6 @@ exit
 FUNC_COPY()
 {
 echo "Copying work files ..."
-echo ""
 mkdir -p $WORKDIR/arch
 mkdir -p $WORKDIR/firmware
 mkdir -p $WORKDIR/include
@@ -77,56 +80,42 @@ cp -rf $RDIR/scripts $WORKDIR/
 sudo cp -rf $RDIR/build/ramdisk/* $WORKDIR/ramdisk 
 }
 
-# Prepare for zimage build
-FUNC_PREPARE()
-{
-cp -f $WORKDIR/arch/arm64/configs/tgpkernel_defconfig $KERNELCONFIG
-[ $MODEL = "S8" ] && cat $WORKDIR/arch/arm64/configs/dreamlte_defconfig >> $KERNELCONFIG
-[ $MODEL = "S8+" ] && cat $WORKDIR/arch/arm64/configs/dream2lte_defconfig >> $KERNELCONFIG
-}
-
 # Build zimage Function
 FUNC_BUILD_KERNEL()
 {
+echo "Preparing configuration ..."
+cp -f $WORKDIR/arch/arm64/configs/tgpkernel_defconfig $KERNELCONFIG
+[ $MODEL = "S8" ] && cat $WORKDIR/arch/arm64/configs/dreamlte_defconfig >> $KERNELCONFIG
+[ $MODEL = "S8+" ] && cat $WORKDIR/arch/arm64/configs/dream2lte_defconfig >> $KERNELCONFIG
 cd $WORKDIR
 sudo find . -name \.placeholder -type f -delete
-cd ..
+cd $RDIR
+echo "Loading configuration ..."
+echo ""
 if [ $SILENT = "no" ]; then
-	echo "Loading configuration ..."
-	echo ""
-	make -C $RDIR O=.work -j$BUILD_JOB_NUMBER ARCH=$ARCH CROSS_COMPILE=$BUILD_CROSS_COMPILE ../../../$KERNELCONFIG || exit -1
-	echo ""
-	echo "Compiling zImage ..."
-	echo ""
-	make -C $RDIR O=.work -j$BUILD_JOB_NUMBER ARCH=$ARCH CROSS_COMPILE=$BUILD_CROSS_COMPILE || exit -1
-	echo ""
+	make -C $RDIR O=$WORK -j$BUILD_JOB_NUMBER ARCH=$ARCH CROSS_COMPILE=$BUILD_CROSS_COMPILE ../../../$KERNELCONFIG || exit -1
 else
-	echo "Loading configuration ..."
-	echo ""
-	make -s -C $RDIR O=.work -j$BUILD_JOB_NUMBER ARCH=$ARCH CROSS_COMPILE=$BUILD_CROSS_COMPILE ../../../$KERNELCONFIG || exit -1
-	echo ""
-	echo "Compiling zImage ..."
-	echo ""
-	make -s -C $RDIR O=.work -j$BUILD_JOB_NUMBER ARCH=$ARCH CROSS_COMPILE=$BUILD_CROSS_COMPILE || exit -1
-	echo ""
+	make -s -C $RDIR O=$WORK -j$BUILD_JOB_NUMBER ARCH=$ARCH CROSS_COMPILE=$BUILD_CROSS_COMPILE ../../../$KERNELCONFIG || exit -1
 fi
-}
-
-# Build Ramdisk Function
-FUNC_BUILD_RAMDISK()
-{
+echo "Compiling zImage and dtb ..."
+echo ""
+if [ $SILENT = "no" ]; then
+	make -C $RDIR O=$WORK -j$BUILD_JOB_NUMBER ARCH=$ARCH CROSS_COMPILE=$BUILD_CROSS_COMPILE || exit -1
+else
+	make -s -C $RDIR O=$WORK -j$BUILD_JOB_NUMBER ARCH=$ARCH CROSS_COMPILE=$BUILD_CROSS_COMPILE || exit -1
+fi
+echo ""
+echo "Compiling Ramdisk ..."
 sudo cp $WORKDIR/arch/$ARCH/boot/Image $WORKDIR/ramdisk/split_img/boot.img-zImage
 sudo cp $WORKDIR/arch/$ARCH/boot/dtb.img $WORKDIR/ramdisk/split_img/boot.img-dtb
 if [ $MODEL = "S8" ]; then
 	sudo sed -i -- 's/G955/G950/g' $WORKDIR/ramdisk/ramdisk/default.prop
 	sudo sed -i -- 's/dream2lte/dreamlte/g' $WORKDIR/ramdisk/ramdisk/default.prop
 	sudo sed -i -- 's/SRPPH16A003KU/SRPPK02A003KU/g' $WORKDIR/ramdisk/split_img/boot.img-board
-	cd $WORKDIR/ramdisk
-	./repackimg.sh
-else
-	cd $WORKDIR/ramdisk
-	./repackimg.sh
 fi
+	cd $WORKDIR/ramdisk
+	./repackimg.sh
+echo ""
 }
 
 # Build boot.img Function
@@ -135,10 +124,30 @@ FUNC_BUILD_BOOTIMG()
 	(
 	FUNC_CLEAN
 	FUNC_COPY
-	FUNC_PREPARE
 	FUNC_BUILD_KERNEL
-	FUNC_BUILD_RAMDISK
 	) 2>&1	 | tee -a $LOGFILE
+}
+
+# Build config files seperately
+FUNC_CONFIGS()
+{
+# Config for S8
+MODEL=S8
+FUNC_CLEAN
+FUNC_COPY
+KERNELCONFIG=$WORK/arch/arm64/configs/exynos8895-dreamlte_defconfig
+make -C $RDIR O=$WORK -j$BUILD_JOB_NUMBER ARCH=$ARCH CROSS_COMPILE=$BUILD_CROSS_COMPILE ../../../$KERNELCONFIG || exit -1
+mv -f $WORKDIR/.config $RDIR/arch/arm64/configs/exynos8895-dreamlte_defconfig
+# Config for S8+
+MODEL=S8+
+FUNC_CLEAN
+FUNC_COPY
+KERNELCONFIG=$WORK/arch/arm64/configs/exynos8895-dream2lte_defconfig
+make -C $RDIR O=$WORK -j$BUILD_JOB_NUMBER ARCH=$ARCH CROSS_COMPILE=$BUILD_CROSS_COMPILE ../../../$KERNELCONFIG || exit -1
+mv -f $WORKDIR/.config $RDIR/arch/arm64/configs/exynos8895-dream2lte_defconfig
+# Clean up
+FUNC_CLEAN
+exit
 }
 
 # Build Zip Function
@@ -190,22 +199,32 @@ cd $RDIR
 # Check command line for switches
 [ "$1" = "0" ] && FUNC_CLEAN_ALL
 [ "$1" = "00" ] && FUNC_CLEAN_CCACHE
-if [ "$1" = "-k" ] || [ "$2" = "-k" ]; then
-KEEP=yes
-fi
-if [ "$1" = "-s" ] || [ "$2" = "-s" ]; then
-SILENT=yes
-fi
-if [ "$1" = "-ks" ] || [ "$2" = "-ks" ]; then
-SILENT=yes
-KEEP=yes
-fi
+[ "$1" = "configs" ] && FUNC_CONFIGS
+[ "$1" = "950" ] || [ "$2" = "950" ] || [ "$3" = "950" ] || [ "$4" = "950" ] && export BUILD955=no
+[ "$1" = "955" ] || [ "$2" = "955" ] || [ "$3" = "955" ] || [ "$4" = "955" ] && export BUILD950=no
+[ "$1" = "-ks" ] || [ "$2" = "-ks" ] || [ "$3" = "-ks" ] || [ "$4" = "-ks" ] && export SILENT=yes && export KEEP=yes
+[ "$1" = "-k" ] || [ "$2" = "-k" ] || [ "$3" = "-k" ] || [ "$4" = "-k" ] && export KEEP=yes
+[ "$1" = "-s" ] || [ "$2" = "-s" ] || [ "$3" = "-s" ] || [ "$4" = "-s" ] && export SILENT=yes
 
-# Compile Kernels
+# Start Script
+clear
 echo ""
-echo "-----------------------------------"
-echo "- TGPKernel Build Script by djb77 -"
-echo "-----------------------------------"
+echo "+-----------------------------------------+"
+echo "-                                         -"
+echo "-     @@@@@@@@@@    @@@@@  @@@@@@@@       -"
+echo "-     @@@@@@@@@@ @@@@@@@@@ @@@@@@@@@@     -"
+echo "-        @@@@  '@@@@@@@@@@ @@@@@@@@@@     -"
+echo "-        @@@@   @@@@@@@     @@@   @@@     -"
+echo "-        @@@@   @@@@@       @@@  @@@@     -"
+echo "-        @@@@   @@@@@  @@@@ @@@@@@@@      -"
+echo "-        @@@@    @@@@@ @@@@ @@@@@@@       -"
+echo "-        @@@@    @@@@@@@@@@ @@@@          -"
+echo "-        @@@@     @@@@@@@@ @@@@@          -"
+echo "-                    @@@@@                -"
+echo "-                                         -"
+echo "-     TGPKernel Build Script by djb77     -"
+echo "-                                         -"
+echo "+-----------------------------------------+"
 echo ""
 sudo echo ""
 [ -d "$WORKDIR" ] && rm -rf $WORKDIR
@@ -221,23 +240,30 @@ mkdir -p $ZIPDIR/tgpkernel/kernels
 START_TIME=`date +%s`
 
 # Build S8 img files
-echo ""
-echo "Building .img files"
-echo "-------------------"
-echo ""
-MODEL=S8
-export KERNELTITLE=$KERNELNAME.$MODEL.$VERSION_NUMBER
-LOGFILE=$OUTPUT/build-s8.log
-FUNC_BUILD_BOOTIMG
-mv -f $WORKDIR/ramdisk/image-new.img $ZIPDIR/tgpkernel/kernels/boot-s8.img
-MODEL=S8+
-export KERNELTITLE=$KERNELNAME.$MODEL.$VERSION_NUMBER
-LOGFILE=$OUTPUT/build-s8+.log
-FUNC_BUILD_BOOTIMG
-mv -f $WORKDIR/ramdisk/image-new.img $ZIPDIR/tgpkernel/kernels/boot-s8+.img
+if [ $BUILD950 = "yes" ]; then
+	MODEL=S8
+	echo "---------------------"
+	echo "Building S8 .img file"
+	echo "---------------------"
+	export KERNELTITLE=$KERNELNAME.$MODEL.$VERSION_NUMBER
+	LOGFILE=$OUTPUT/build-s8.log
+	FUNC_BUILD_BOOTIMG
+	mv -f $WORKDIR/ramdisk/image-new.img $ZIPDIR/tgpkernel/kernels/boot-s8.img
+fi
+if [ $BUILD955 = "yes" ]; then
+	MODEL=S8+
+	echo "----------------------"
+	echo "Building S8+ .img file"
+	echo "----------------------"
+	export KERNELTITLE=$KERNELNAME.$MODEL.$VERSION_NUMBER
+	LOGFILE=$OUTPUT/build-s8+.log
+	FUNC_BUILD_BOOTIMG
+	mv -f $WORKDIR/ramdisk/image-new.img $ZIPDIR/tgpkernel/kernels/boot-s8+.img
+fi
 
 # Final archiving
 echo ""
+echo "---------------"
 echo "Final archiving"
 echo "---------------"
 echo ""
