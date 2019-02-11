@@ -41,6 +41,6 @@ wlan.wfd.hdcp=disable
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
-ro.bootimage.build.date=Mon Oct 1 11:02:44 KST 2018
-ro.bootimage.build.date.utc=1538359364
-ro.bootimage.build.fingerprint=samsung/greatltexx/greatlte:8.0.0/R16NW/N950FXXS5CRJ1:user/test-keys
+ro.bootimage.build.date=Mon Jan 21 15:52:18 KST 2019
+ro.bootimage.build.date.utc=1548053538
+ro.bootimage.build.fingerprint=samsung/greatltexx/greatlte:8.0.0/R16NW/N950FXXS5CSA6:user/test-keys

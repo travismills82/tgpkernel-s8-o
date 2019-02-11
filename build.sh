@@ -1,6 +1,6 @@
 #!/bin/bash
 # ----------------------------
-# TGPKERNEL BUILD SCRIPT 5.5.6
+# TGPKERNEL BUILD SCRIPT 5.5.7
 # Created by @djb77
 # ----------------------------
 

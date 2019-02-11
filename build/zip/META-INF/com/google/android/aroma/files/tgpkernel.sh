@@ -1,6 +1,6 @@
 #!/sbin/sh
 # ------------------------------
-# TGPKERNEL INSTALLER 5.5.6
+# TGPKERNEL INSTALLER 5.5.7
 # Created by @djb77
 #
 # Credit also goes to @Tkkg1994,
@@ -199,10 +199,10 @@ if [ $OPTION == "kernel_flash" ]; then
 	[ -f /system/xbin/uci ] && rm -f /system/xbin/uci
 	# Flash new Image
 	if grep -q install=1 $AROMA/g950x.prop; then
-		$AROMA/busybox dd if=$KERNELPATH/boot-s8.img of=$BLOCK/BOOT
+		dd if=$KERNELPATH/boot-s8.img of=$BLOCK/BOOT
 	fi
 	if grep -q install=1 $AROMA/g955x.prop; then
-		$AROMA/busybox dd if=$KERNELPATH/boot-s8+.img of=$BLOCK/BOOT
+		dd if=$KERNELPATH/boot-s8+.img of=$BLOCK/BOOT
 	fi
 	sync
 	exit 10

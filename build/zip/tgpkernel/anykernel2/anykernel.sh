@@ -1,5 +1,5 @@
 # ------------------------------
-# TGPKERNEL INSTALLER 5.5.6
+# TGPKERNEL INSTALLER 5.5.7
 #
 # Anykernel2 created by @osm0sis
 # Everything else done by @djb77
