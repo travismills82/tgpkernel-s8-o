@@ -3,9 +3,9 @@
 #
 persist.security.ams.enforcing=0
 ro.oem_unlock_supported=1
-ro.secure=0
+ro.secure=1
 security.perf_harden=1
-ro.adb.secure=0
+ro.adb.secure=1
 ro.allow.mock.location=0
 ro.debuggable=1
 persist.sys.usb.config=mtp,adb
@@ -47,9 +47,10 @@ ro.config.hw_quickpoweron=true
 ro.config.hw_power_saving=true
 ro.config.hw_fast_dormancy=1
 persist.sys.shutdown.mode=hibernate
+ro.treble.enabled=true
 #
 # BOOTIMAGE_BUILD_PROPERTIES
 #
 ro.bootimage.build.date=Thu Jan 17 04:30:47 KST 2019
 ro.bootimage.build.date.utc=1547667047
-ro.bootimage.build.fingerprint=samsung/dream2ltexx/dream2lte:8.0.0/R16NW/G955FXXS4CSA7:user/test-keys
+ro.bootimage.build.fingerprint=samsung/dreamltexx/dreamlte:8.0.0/R16NW/G950FXXS4CSA7:user/test-keys
