@@ -810,7 +810,7 @@ on fs
     chown system system /dev/network_throughput
 
 # ARGOSD
-    service argos-daemon /system/vendor/bin/argosd
+    service argos-daemon /vendor/bin/argosd
     class main
     user system
     group system radio
