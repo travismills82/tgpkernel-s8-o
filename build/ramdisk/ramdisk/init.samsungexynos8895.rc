@@ -17,6 +17,8 @@ on init
     mkdir /storage/emulated 0555 root root
 
     # Support legacy paths
+    symlink /vendor /system/vendor
+
     symlink /sdcard /mnt/sdcard
 
     export EXTERNAL_STORAGE /sdcard
